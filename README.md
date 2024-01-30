@@ -1,3 +1,3 @@
 # automation.api
 
-A general purpose fRESTful API for automation.<br />
+A general purpose RESTful API for automation.<br />
