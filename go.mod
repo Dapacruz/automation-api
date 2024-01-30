@@ -1,4 +1,4 @@
-module github.com/Dapacruz/automation.api
+module github.com/Dapacruz/automation-api
 
 go 1.19
 

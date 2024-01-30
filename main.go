@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/Dapacruz/automation.api/aap"
+	"github.com/Dapacruz/automation-api/aap"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
