@@ -1,0 +1,5 @@
+aap:
+  user:
+  password:
+  base_url: https://aap.domain.com
+port: 8080
