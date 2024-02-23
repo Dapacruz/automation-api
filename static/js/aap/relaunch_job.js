@@ -1,7 +1,7 @@
 function relaunch_job() {
     var data = JSON.stringify({
+        job_template_name: document.getElementById("job_template_name").value,
         job_template: document.getElementById("job_template").value,
-        job_template_id: document.getElementById("job_template_id").value,
         incident: document.getElementById("incident").value,
         configuration_item: document.getElementById("configuration_item").value,
     })

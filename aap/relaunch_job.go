@@ -30,8 +30,8 @@ type job struct {
 }
 
 type postData struct {
-	JobTemplate       string `json:"job_template"`
-	JobTemplateId     string `json:"job_template_id"`
+	JobTemplate       string `json:"job_template_name"`
+	JobTemplateId     string `json:"job_template"`
 	Incident          string `json:"incident"`
 	ConfigurationItem string `json:"configuration_item"`
 }
@@ -40,8 +40,8 @@ func LoadRelaunchJobPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "relaunch_job.tmpl", gin.H{
 		"configuration_item": c.Query("configuration_item"),
 		"incident":           c.Query("incident"),
+		"job_template_name":  c.Query("job_template_name"),
 		"job_template":       c.Query("job_template"),
-		"job_template_id":    c.Query("job_template_id"),
 	})
 }
 
