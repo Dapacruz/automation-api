@@ -1,2 +1,6 @@
+scratch
+tmp
+testdata
 config.yml
 automation-api
+.DS_Store

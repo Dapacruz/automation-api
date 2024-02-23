@@ -29,6 +29,22 @@ type job struct {
 	Status       string
 }
 
+type postData struct {
+	JobTemplate       string `json:"job_template"`
+	JobTemplateId     string `json:"job_template_id"`
+	Incident          string `json:"incident"`
+	ConfigurationItem string `json:"configuration_item"`
+}
+
+func LoadRelaunchJobPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "relaunch_job.tmpl", gin.H{
+		"configuration_item": c.Query("configuration_item"),
+		"incident":           c.Query("incident"),
+		"job_template":       c.Query("job_template"),
+		"job_template_id":    c.Query("job_template_id"),
+	})
+}
+
 func fetchRunningJobs(httpClient *http.Client, credentials, jobTemplate string) (*jobs, error) {
 	url := fmt.Sprintf("%s/api/v2/jobs", viper.GetString("aap.base_url"))
 	req, err := http.NewRequest("GET", url, nil)
@@ -40,7 +56,8 @@ func fetchRunningJobs(httpClient *http.Client, credentials, jobTemplate string) 
 
 	q := req.URL.Query()
 	q.Add("job_template", jobTemplate)
-	q.Add("status", "running")
+	q.Add("page_size", "100")
+	q.Add("order_by", "-id")
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := httpClient.Do(req)
@@ -67,20 +84,20 @@ func fetchRunningJobs(httpClient *http.Client, credentials, jobTemplate string) 
 	return jobs, nil
 }
 
-func playbookRunning(httpClient *http.Client, credentials, jobTemplate, incident string) (bool, job, error) {
+func jobRunning(httpClient *http.Client, credentials, jobTemplate, incident string) (bool, job, error) {
 	jobs, err := fetchRunningJobs(httpClient, credentials, jobTemplate)
 	if err != nil {
 		return false, job{}, err
 	}
 	for _, j := range jobs.Results {
-		if strings.Contains(j.Extra_Vars, incident) {
+		if strings.Contains(j.Extra_Vars, incident) && (strings.Contains(j.Status, "pending") || strings.Contains(j.Status, "running")) {
 			return true, j, nil
 		}
 	}
 	return false, job{}, nil
 }
 
-func executePlaybook(httpClient *http.Client, credentials, jobTemplate, configurationItem, incident string) (*job, error) {
+func relaunchJob(httpClient *http.Client, credentials, jobTemplate, configurationItem, incident string) (*job, error) {
 	url := fmt.Sprintf("%s/api/v2/job_templates/%s/launch/", viper.GetString("aap.base_url"), jobTemplate)
 	body := []byte(fmt.Sprintf(`{"extra_vars": {"snow_incident": "%s", "configuration_item": "%s"}}`, incident, configurationItem))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
@@ -114,17 +131,9 @@ func executePlaybook(httpClient *http.Client, credentials, jobTemplate, configur
 	return job, nil
 }
 
-func ExecutePlaybook(c *gin.Context) {
-	configurationItem := strings.ToLower(c.Query("configuration_item"))
-	var jobTemplate, incident string
-	if jobTemplate = c.Query("job_template"); jobTemplate == "" {
-		c.IndentedJSON(http.StatusUnprocessableEntity, gin.H{"@error": "missing job_template parameter"})
-		return
-	}
-	if incident = c.Query("incident"); incident == "" {
-		c.IndentedJSON(http.StatusUnprocessableEntity, gin.H{"@error": "missing incident parameter"})
-		return
-	}
+func RelaunchJob(c *gin.Context) {
+	var data postData
+	c.BindJSON(&data)
 
 	credentials := fmt.Sprintf("%s:%s", viper.GetString("aap.user"), viper.GetString("aap.password"))
 	credentials = base64.StdEncoding.EncodeToString([]byte(credentials))
@@ -134,15 +143,15 @@ func ExecutePlaybook(c *gin.Context) {
 	}
 	httpClient := &http.Client{Transport: tr}
 
-	// Check to see is a job, for this incident, is already running
-	running, runningJob, err := playbookRunning(httpClient, credentials, jobTemplate, incident)
+	// Check to see if a job, for this incident, is already running
+	running, runningJob, err := jobRunning(httpClient, credentials, data.JobTemplateId, data.Incident)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"@error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if running {
-		c.IndentedJSON(http.StatusOK, gin.H{
-			"@error":  "playbook is already running",
+		c.JSON(http.StatusOK, gin.H{
+			"results": "job is already running",
 			"created": runningJob.Created,
 			"started": runningJob.Started,
 			"job_id":  runningJob.ID,
@@ -151,16 +160,16 @@ func ExecutePlaybook(c *gin.Context) {
 		return
 	}
 
-	// Execute the playbook
-	executedJob, err := executePlaybook(httpClient, credentials, jobTemplate, configurationItem, incident)
+	// Relaunch the job
+	executedJob, err := relaunchJob(httpClient, credentials, data.JobTemplateId, data.ConfigurationItem, data.Incident)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"@error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.IndentedJSON(http.StatusOK, gin.H{
-		"@results": "playbook executed",
-		"created":  executedJob.Created,
-		"job_id":   executedJob.ID,
-		"url":      fmt.Sprintf("%s/#/jobs/playbook/%s/output", viper.GetString("aap.base_url"), strconv.Itoa(executedJob.ID)),
+	c.JSON(http.StatusCreated, gin.H{
+		"results": "job relaunched",
+		"created": executedJob.Created,
+		"job_id":  executedJob.ID,
+		"url":     fmt.Sprintf("%s/#/jobs/playbook/%s/output", viper.GetString("aap.base_url"), strconv.Itoa(executedJob.ID)),
 	})
 }

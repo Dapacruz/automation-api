@@ -28,7 +28,16 @@ func main() {
 	initializeConfig()
 
 	router := gin.Default()
-	router.GET("/aap/execute/playbook", aap.ExecutePlaybook)
+
+	router.Static("/css", "./static/css")
+	router.Static("/js", "./static/js")
+	router.Static("/img", "./static/img")
+	router.LoadHTMLGlob("templates/**/*")
+
+	router.GET("/aap/relaunch/job", aap.LoadRelaunchJobPage)
+	router.POST("/aap/relaunch/job", aap.RelaunchJob)
+	// Deprecated
+	router.GET("/aap/execute/playbook", aap.LoadRelaunchJobPage)
 
 	router.Run(fmt.Sprintf("localhost:%s", viper.GetString("port")))
 }

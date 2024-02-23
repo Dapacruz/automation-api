@@ -1,0 +1,38 @@
+{{ define "relaunch_job.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title></title>
+        <link rel="shortcut icon" type="image/jpg" href="/img/aap/favicon.ico"/>
+        <link href="/css/aap/style.css" rel="stylesheet">
+        <script src="/js/aap/relaunch_job.js" defer></script>
+    </head>
+    <body>
+        <div class="form-container">
+            <label for="job_template">Job Template:</label>
+            <input type="text" tabindex="-1" id="job_template" name="job_template" placeholder="" value="{{ .job_template }}" readonly="readonly"></input><br>
+
+            <label for="job_template_id">Job Template ID:</label>
+            <input type="text" tabindex="2" id="job_template_id" name="job_template_id" placeholder="Job Template ID" value="{{ .job_template_id }}"></input>
+
+            <label for="incident">Incident:</label>
+            <input type="text" tabindex="3" id="incident" name="incident" placeholder="Incident Number" value="{{ .incident }}"></input><br>
+
+            <label for="configuration_item">Configuration Item:</label>
+            <input type="text" tabindex="4" id="configuration_item" name="configuration_item" placeholder="Configuration Item" value="{{ .configuration_item }}"></input><br>
+
+            <button type="submit" tabindex="1" onclick="relaunch_job()">Relaunch Job</button>
+
+            <br><br>
+            <output id="output" class="output-container" style="display:none">
+                <div>Status: <span id="status"></span></div>
+                <div>Created: <span id="created"></span></div>
+                <div>Job ID: <span id="job_id"></span></div>
+                <div>Job Log: <span id="url"></span></div>
+            </output>
+        </div>
+    </body>
+</html>
+{{ end }}
