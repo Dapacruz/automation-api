@@ -11,19 +11,21 @@
     </head>
     <body>
         <div class="form-container">
-            <label for="job_template_name">Job Template:</label>
-            <input type="text" tabindex="-1" id="job_template_name" name="job_template_name" placeholder="" value="{{ .job_template_name }}" readonly="readonly"></input><br>
+            <label for="template_name">Job Template:</label>
+            <select name="templates" id="template_name">
+                <option>Select Job Template</option>
+            {{ range $k, $v := .template_ids }}
+                <option {{ if eq $k $.template }}selected="selected"{{ end }}>{{ $v.name }}</option>
+            {{ end }}
+            </select>
 
-            <label for="job_template">Job Template ID:</label>
-            <input type="text" tabindex="2" id="job_template" name="job_template" placeholder="Job Template ID" value="{{ .job_template }}"></input>
-
-            <label for="incident">Incident:</label>
-            <input type="text" tabindex="3" id="incident" name="incident" placeholder="Incident Number" value="{{ .incident }}"></input><br>
+            <label for="snow_incident">ServiceNow Incident:</label>
+            <input type="text" tabindex="3" id="snow_incident" name="snow_incident" placeholder="Incident Number" value="{{ .snow_incident }}"></input><br>
 
             <label for="configuration_item">Configuration Item:</label>
             <input type="text" tabindex="4" id="configuration_item" name="configuration_item" placeholder="Configuration Item" value="{{ .configuration_item }}"></input><br>
 
-            <button type="submit" tabindex="1" onclick="relaunch_job()">Relaunch Job</button>
+            <button type="submit" tabindex="1" onclick="relaunch_job({{ .template_ids }})">Relaunch Job</button>
 
             <br><br>
             <output id="output" class="output-container" style="display:none">

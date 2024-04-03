@@ -39,9 +39,10 @@ type postData struct {
 func LoadRelaunchJobPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "relaunch_job.tmpl", gin.H{
 		"configuration_item": c.Query("configuration_item"),
-		"incident":           c.Query("incident"),
-		"job_template_name":  c.Query("job_template_name"),
-		"job_template":       c.Query("job_template"),
+		"snow_incident":      c.Query("snow_incident"),
+		"template_name":      c.Query("job_template_name"),
+		"template":           c.Query("job_template"),
+		"template_ids":       viper.GetStringMap("aap.relaunch_job_template_ids"),
 	})
 }
 
