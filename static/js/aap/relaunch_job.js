@@ -54,13 +54,13 @@ function show_input(tmpl_ids) {
     const snow_inc_label = document.getElementById("snow_incident_label");
     const snow_inc = document.getElementById("snow_incident");
     const ci_label = document.getElementById("configuration_item_label");
-    const ci_item = document.getElementById("configuration_item");
+    const ci = document.getElementById("configuration_item");
 
     if (selected_tmpl === "Select Job Template") {
         snow_inc_label.hidden = true;
         snow_inc.type = "hidden";
         ci_label.hidden=true;
-        ci_item.type = "hidden";
+        ci.type = "hidden";
         return;
     }
 
@@ -76,10 +76,10 @@ function show_input(tmpl_ids) {
 
     if ("configuration_item" in extra_vars) {
         ci_label.hidden = false;
-        ci_item.type = "text";
+        ci.type = "text";
     } else {
         ci_label.hidden = true;
-        ci_item.type = "hidden";
+        ci.type = "hidden";
     }
 }
 
