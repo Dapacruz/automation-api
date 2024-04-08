@@ -28,6 +28,7 @@ func main() {
 	initializeConfig()
 
 	router := gin.Default()
+	router.SetTrustedProxies(nil)
 
 	router.Static("/css", "./static/css")
 	router.Static("/js", "./static/js")
