@@ -12,7 +12,7 @@
     <body>
         <div class="form-container">
             <label for="template_name">Job Template:</label>
-            <select name="templates" id="template_name" onchange="enable_input({{ .template_ids }})">
+            <select name="templates" id="template_name" onchange="show_input({{ .template_ids }})">
                 <option>Select Job Template</option>
             {{ range $k, $v := .template_ids }}
                 <option {{ if eq $k $.template }}selected="selected"{{ end }}>{{ $v.name }}</option>

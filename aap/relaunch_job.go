@@ -32,7 +32,7 @@ type job struct {
 type postData struct {
 	JobTemplate       string `json:"job_template_name"`
 	JobTemplateId     string `json:"job_template"`
-	Incident          string `json:"incident"`
+	Incident          string `json:"snow_incident"`
 	ConfigurationItem string `json:"configuration_item"`
 }
 

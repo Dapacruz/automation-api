@@ -1,17 +1,27 @@
 function relaunch_job(tmpl_ids) {
-    var template_name = document.getElementById("template_name").value;
-    if (template_name === "Select Job Template") {
+    const tmpl_name = document.getElementById("template_name").value;
+    if (tmpl_name === "Select Job Template") {
         alert("Please select a job template");
-        return
+        return;
     }
-    var template = Object.keys(tmpl_ids).find(key => tmpl_ids[key]["name"] === template_name);
-    var data = JSON.stringify({
-        job_template_name: template_name,
-        job_template: template,
-        incident: document.getElementById("snow_incident").value,
-        configuration_item: document.getElementById("configuration_item").value,
-    });
+    const tmpl_id = Object.keys(tmpl_ids).find(key => tmpl_ids[key]["name"] === tmpl_name);
 
+    // Process extra_vars to be posted to AAP
+    let extra_vars = tmpl_ids[tmpl_id]["extra_vars"];
+    const req_vars = Object.keys(extra_vars);
+    extra_vars["job_template"] = tmpl_id;
+    for (let i = 0; i < req_vars.length; i++) {
+        let rv = req_vars[i];
+        const input = document.getElementById(rv);
+        extra_vars[rv] = input.value;
+        if (extra_vars[rv] === "") {
+            alert(`${input.placeholder} is required`);
+            return;
+        }
+    }
+
+    // Relaunch job
+    const data = JSON.stringify(extra_vars);
     fetch("/aap/relaunch/job", {
         method: "POST",
         body: data,
@@ -25,7 +35,7 @@ function relaunch_job(tmpl_ids) {
                 document.getElementById("output").style.display = "";
                 throw new Error(`unexpected status code ${res.status}, ${res.statusText}`);
             }
-            return res.json()
+            return res.json();
         }).then(json => {
             console.log(json);
             document.getElementById("status").innerHTML = `${json.results}`;
@@ -38,38 +48,38 @@ function relaunch_job(tmpl_ids) {
         })
 }
 
-function enable_input(tmpl_ids) {
-    var selected = document.getElementById("template_name").value;
-    var template_id = Object.keys(tmpl_ids).find(key => tmpl_ids[key]["name"] === selected);
-    var snow_incident_label = document.getElementById("snow_incident_label");
-    var snow_incident = document.getElementById("snow_incident");
-    var configuration_item_label = document.getElementById("configuration_item_label");
-    var configuration_item = document.getElementById("configuration_item");
+function show_input(tmpl_ids) {
+    const selected_tmpl = document.getElementById("template_name").value;
+    const tmpl_id = Object.keys(tmpl_ids).find(key => tmpl_ids[key]["name"] === selected_tmpl);
+    const snow_inc_label = document.getElementById("snow_incident_label");
+    const snow_inc = document.getElementById("snow_incident");
+    const ci_label = document.getElementById("configuration_item_label");
+    const ci_item = document.getElementById("configuration_item");
 
-    if (selected === "Select Job Template") {
-        snow_incident_label.hidden=true;
-        snow_incident.type="hidden";
-        configuration_item_label.hidden=true;
-        configuration_item.type="hidden";
-        return
+    if (selected_tmpl === "Select Job Template") {
+        snow_inc_label.hidden = true;
+        snow_inc.type = "hidden";
+        ci_label.hidden=true;
+        ci_item.type = "hidden";
+        return;
     }
 
-    var extra_vars = tmpl_ids[template_id]["extra_vars"];
+    const extra_vars = tmpl_ids[tmpl_id]["extra_vars"];
 
-    if (extra_vars.includes("snow_incident")) {
-        snow_incident_label.hidden=false;
-        snow_incident.type="text";
+    if ("snow_incident" in extra_vars) {
+        snow_inc_label.hidden = false;
+        snow_inc.type = "text";
     } else {
-        snow_incident_label.hidden=true;
-        snow_incident.type="hidden";
+        snow_inc_label.hidden = true;
+        snow_inc.type = "hidden";
     }
 
-    if (extra_vars.includes("configuration_item")) {
-        configuration_item_label.hidden=false;
-        configuration_item.type="text";
+    if ("configuration_item" in extra_vars) {
+        ci_label.hidden = false;
+        ci_item.type = "text";
     } else {
-        configuration_item_label.hidden=true;
-        configuration_item.type="hidden";
+        ci_label.hidden = true;
+        ci_item.type = "hidden";
     }
 }
 
